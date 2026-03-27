@@ -9,8 +9,24 @@ async function startServer() {
   const app = express();
   const PORT = parseInt(process.env.PORT || '8080', 10);
 
-  app.use(cors());
+  const allowedOrigins = [
+    'https://fairsharre.netlify.app',
+    'http://localhost:5173',
+  ];
+
+  app.use(cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, curl, Render health checks)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        return callback(new Error(`CORS policy: origin ${origin} not allowed`), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
+  }));
   app.use(express.json());
+
 
   // API Routes
   app.get('/api/health', (req, res) => {
